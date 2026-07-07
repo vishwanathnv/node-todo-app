@@ -5,7 +5,6 @@ pipeline {
     environment {
 
         IMAGE_NAME = "vishu66/nodejs_web"
-
         IMAGE_TAG = "${BUILD_NUMBER}"
 
     }
@@ -62,7 +61,8 @@ pipeline {
             steps {
 
                 withDockerRegistry(
-                    credentialsId: 'dockerhub-creds'
+                    credentialsId: 'dockerhub-creds',
+                    url: 'https://index.docker.io/v1/'
                 ) {
 
                     sh '''
@@ -88,18 +88,15 @@ pipeline {
 
                     echo "Updating Kubernetes Deployment Image"
 
-
-                    sed -i "s|vishu66/nodejs_web:v1|${IMAGE_NAME}:${IMAGE_TAG}|g" k8s/deployment.yaml
+                    sed -i "s|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|g" k8s/deployment.yaml
 
 
                     echo "Applying Kubernetes manifests"
-
 
                     kubectl apply -f k8s/
 
 
                     echo "Checking rollout"
-
 
                     kubectl rollout status deployment/todo-app
 
